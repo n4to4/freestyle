@@ -21,13 +21,13 @@ The set of abstract operations of the `Cache` algebra are specified as follows.
 
 ```Scala
 class KeyValueProvider[Key, Value] {
-    @free sealed trait CacheM[F[_]] {
-      def get(key: Key):              FreeS.Par[F, Option[Val]]
-      def put(key: Key, newVal: Val): FreeS.Par[F, Unit]
-      def del(key: Key):              FreeS.Par[F, Unit]
-      def has(key: Key):              FreeS.Par[F, Boolean]
-      def keys:                       FreeS.Par[F, List[Key]]
-      def clear:                      FreeS.Par[F, Unit]
+    @free sealed trait CacheM {
+      def get(key: Key):              OpPar[Option[Val]]
+      def put(key: Key, newVal: Val): OpPar[Unit]
+      def del(key: Key):              OpPar[Unit]
+      def has(key: Key):              OpPar[Boolean]
+      def keys:                       OpPar[List[Key]]
+      def clear:                      OpPar[Unit]
     }
 }
 ```

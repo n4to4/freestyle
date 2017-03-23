@@ -67,8 +67,8 @@ class FetchTests extends AsyncWordSpec with Matchers {
 
 object algebras {
   @free
-  trait NonFetch[F[_]] {
-    def x: FreeS[F, Int]
+  trait NonFetch {
+    def x: OpSeq[Int]
   }
 
   implicit def nonFetchHandler: NonFetch.Handler[Future] =

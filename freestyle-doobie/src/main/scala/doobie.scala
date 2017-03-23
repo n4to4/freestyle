@@ -17,20 +17,20 @@
 package freestyle
 
 import cats.{~>, Foldable}
-import _root_.doobie.imports._
+import _root_.doobie.imports.{ConnectionIO, Transactor}
 import fs2.util.{Catchable, Suspendable}
 
 object doobie {
 
-  @free sealed trait DoobieM[F[_]] {
-    def transact[A](f: ConnectionIO[A]): FreeS.Par[F, A]
+  @free sealed trait DoobieM {
+    def transact[A](f: ConnectionIO[A]): OpPar[A]
   }
 
   object implicits {
     implicit def freeStyleDoobieHandler[M[_]: Catchable: Suspendable](
         implicit xa: Transactor[M]): DoobieM.Handler[M] =
       new DoobieM.Handler[M] {
-        def transact[A](fa: ConnectionIO[A]): M[A] = fa.transact(xa)
+        def transact[A](fa: ConnectionIO[A]): M[A] = xa.trans(fa)
       }
 
     implicit def freeSLiftDoobie[F[_]: DoobieM]: FreeSLift[F, ConnectionIO] =

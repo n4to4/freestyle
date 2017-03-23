@@ -21,6 +21,10 @@ import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
 import scala.reflect.runtime.universe._
 
+trait FreeModuleLike {
+  type Op[A]
+}
+
 object coproductcollect {
 
   def apply[A](a: A): Any = macro materializeImpl[A]
@@ -103,20 +107,33 @@ object module {
 
     def fail(msg: String) = c.abort(c.enclosingPosition, msg)
 
-    def filterImplicitVars( trees: Template): List[ValDef]  =
+    def filterEffectVals( trees: Template): List[ValDef]  =
       trees.collect { case v: ValDef if v.mods.hasFlag(Flag.DEFERRED) => v }
 
-    def mkCompanion( name: TypeName, implicits: List[ValDef] ): ModuleDef = {
+    def mkCompanion( moduleTrait: ClassDef): ModuleDef = {
+      val name = moduleTrait.name
+      val effectVals: List[ValDef] = filterEffectVals(moduleTrait.impl)
+
+      val tns = moduleTrait.tparams.map(_.name)
+      val XX  = freshTermName("XX$")
+      val FF  = freshTypeName("FF$")
+      val AA  = freshTypeName("AA$")
+
+      val injs: List[ValDef] = effectVals.map {
+        case q"$mods val $vname: $algM[..$args]" =>
+          q"val $vname: $algM[$FF,..${args.tail}]"
+      }
+
       q"""
         object ${name.toTermName} extends FreeModuleLike {
-          val X = coproductcollect.apply(this)
-          type Op[A] = X.Op[A]
+          val $XX = coproductcollect.apply(this)
+          type Op[$AA] = $XX.Op[$AA]
 
-          class To[F[_]](implicit ..$implicits) extends $name[F]
+          class To[$FF[_]](implicit ..$injs) extends $name[$FF, ..${tns.tail}]
 
-          implicit def to[F[_]](implicit ..$implicits): To[F] = new To[F]()
+          implicit def to[$FF[_]](implicit ..$injs): To[$FF] = new To[$FF]()
 
-          def apply[F[_]](implicit ev: $name[F]): $name[F] = ev
+          def apply[$FF[_]](implicit ev: $name[$FF, ..${tns.tail}]): $name[$FF, ..${tns.tail}] = ev
         }
       """
     }
@@ -125,12 +142,11 @@ object module {
     annottees match {
       case List(Expr(cls: ClassDef)) =>
         if (cls.mods.hasFlag(Flag.TRAIT | Flag.ABSTRACT)) {
-          val userTrait @ ClassDef(_, name, _, clsTemplate) = cls.duplicate
-          val implicits: List[ValDef] = filterImplicitVars(clsTemplate)
+          val userTrait = cls.duplicate
           //  :+ q"val I: Inject[T, F]"
           q"""
             $userTrait
-            ${mkCompanion(name, implicits)}
+            ${mkCompanion(userTrait)}
           """
         } else
           fail(s"@free requires trait or abstract class")

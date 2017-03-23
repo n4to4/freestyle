@@ -73,8 +73,8 @@ Using only `DoobieM` is however not exactly useful as in that case it just adds 
 
 
 ```tut:book
-@free trait Calc[F[_]] {
-  def subtract(a: Int, b: Int): FreeS[F, Int]
+@free trait Calc {
+  def subtract(a: Int, b: Int): OpSeq[Int]
 }
 
 @module trait Example[F[_]] {
