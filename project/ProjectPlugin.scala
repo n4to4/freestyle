@@ -53,6 +53,7 @@ object ProjectPlugin extends AutoPlugin {
 
   override def projectSettings =
     Seq(
+      javaOptions ++= Seq( "-XX:MaxMetaspaceSize=1g","-XX:+ScavengeBeforeFullGC", "-XX:+UseConcMarkSweepGC", "-XX:+CMSParallelRemarkEnabled"),
       coverageMinimum := 80,
       coverageFailOnMinimum := false,
       description := "A Cohesive & Pragmatic Framework of FP centric Scala libraries",
