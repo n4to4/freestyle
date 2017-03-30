@@ -4,6 +4,7 @@ scala:
 - 2.12.1
 jdk:
 - oraclejdk8
+sbt_args: -J-XX:MaxMetaspaceSize=1g -J-XX:+ScavengeBeforeFullGC, -J-XX:+UseConcMarkSweepGC", -J-XX:+CMSParallelRemarkEnabled
 before_install:
 - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then bash
   scripts/decrypt-keys.sh; fi
