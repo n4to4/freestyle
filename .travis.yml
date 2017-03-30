@@ -4,27 +4,31 @@ scala:
 - 2.12.1
 jdk:
 - oraclejdk8
-sbt_args: -no-colors -J-XX:MaxMetaspaceSize=512m -J-XX:+ScavengeBeforeFullGC, -J-XX:+UseConcMarkSweepGC, -J-XX:+CMSParallelRemarkEnabled
+
+sbt_args: -no-colors -J-XX:+HeapDumpOnOutOfMemoryError -J-XX:HeapDumpPath=dumps
 
 before_install:
 - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then bash
   scripts/decrypt-keys.sh; fi
 - export PATH=${PATH}:./vendor/bundle
-
 install:
 - rvm use 2.2.3 --install --fuzzy
 - gem update --system
 - gem install sass
 - gem install jekyll -v 3.2.1
 
+before_script:
+- mkdir dumps
+
 script:
-- sbt ++$TRAVIS_SCALA_VERSION clean
-- sbt ++$TRAVIS_SCALA_VERSION compile
-- sbt ++$TRAVIS_SCALA_VERSION test:compile
-- sbt ++$TRAVIS_SCALA_VERSION coverage
-- sbt ++$TRAVIS_SCALA_VERSION test
-- sbt ++$TRAVIS_SCALA_VERSION coverageReport
+- sbt ++$TRAVIS_SCALA_VERSION clean coverage test coverageReport
 - sbt ++$TRAVIS_SCALA_VERSION "docs/tut"
+
+after_failure:
+- ls -l dumps/
+- mkdir totransfer
+- tar cpf totransfer/dump-${TRAVIS_SCALA_VERSION}.tar.gz dumps
+- bash scripts/s3.sh totransfer/
 
 after_success:
 - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; then
