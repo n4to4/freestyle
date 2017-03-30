@@ -19,7 +19,7 @@ package freestyle
 import cats.syntax.either._
 import fs2.Task
 import fs2.interop.cats._
-import org.scalatest._
+import org.scalatest.{AsyncWordSpec, BeforeAndAfterAll, Matchers}
 import _root_.doobie.imports._
 import _root_.doobie.h2.h2transactor._
 
@@ -29,15 +29,20 @@ import freestyle.doobie.implicits._
 
 import scala.language.postfixOps
 
-class DoobieTests extends AsyncWordSpec with Matchers {
+class DoobieTests extends AsyncWordSpec with Matchers with BeforeAndAfterAll {
 
   import algebras._
 
-  implicit val xa: Transactor[Task] =
+  implicit val xa: H2Transactor[Task] =
     H2Transactor[Task]("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "").unsafeRunSync.toOption
       .getOrElse(throw new Exception("Could not create test transactor"))
 
   val query: ConnectionIO[Int] = sql"SELECT 1 + 1".query[Int].unique
+
+  override def afterAll: Unit = {
+    xa.dispose.unsafeRunSync.toOption
+    ()
+  }
 
   "Doobie Freestyle integration" should {
 

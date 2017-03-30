@@ -58,7 +58,6 @@ object ProjectPlugin extends AutoPlugin {
       description := "A Cohesive & Pragmatic Framework of FP centric Scala libraries",
       onLoad := (Command.process("project freestyle", _: State)) compose (onLoad in Global).value,
       scalacOptions ++= scalacAdvancedOptions,
-      libraryDependencies += %%("scalatest") % "test",
-      parallelExecution in Test := false
+      libraryDependencies += %%("scalatest") % "test"
     ) ++ scalaMacroDependencies
 }
