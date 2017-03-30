@@ -108,6 +108,7 @@ lazy val freestyleDoobie = (project in file("freestyle-doobie"))
   .dependsOn(freestyleJVM)
   .settings(name := "freestyle-doobie")
   .settings(
+    parallelExecution in Test := false,
     libraryDependencies ++= Seq(
       %%("doobie-core-cats"),
       %%("doobie-h2-cats") % "test"
@@ -118,6 +119,7 @@ lazy val freestyleSlick = (project in file("freestyle-slick"))
   .dependsOn(freestyleJVM, freestyleAsyncJVM)
   .settings(name := "freestyle-slick")
   .settings(
+    parallelExecution in Test := false,
     libraryDependencies ++= Seq(
       %%("slick"),
       "com.h2database" % "h2" % "1.4.194" % "test"
