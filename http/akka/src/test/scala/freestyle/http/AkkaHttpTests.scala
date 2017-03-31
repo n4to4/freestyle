@@ -63,9 +63,9 @@ case class User(name: String)
 object userrepo {
 
   @free
-  trait UserRepository[F[_]] {
-    def get(id: Int): FreeS.Par[F, User]
-    def list: FreeS[F, List[User]]
+  trait UserRepository {
+    def get(id: Int): OpPar[User]
+    def list: OpSeq[List[User]]
   }
 
   @module

@@ -3,8 +3,10 @@
 -Dfile.encoding=UTF8
 -Xms1G
 -Xmx2G
+-XX:MaxMetaspaceSize=1536M
 -XX:ReservedCodeCacheSize=512M
--XX:+TieredCompilation
 -XX:-UseGCOverheadLimit
 -XX:+UseConcMarkSweepGC
+-XX:+ScavengeBeforeFullGC
+-XX:+CMSScavengeBeforeRemark
 -XX:+CMSClassUnloadingEnabled
